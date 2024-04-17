@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS, cross_origin
 import replicate
 from os import environ
+import os
 from flask_pymongo import PyMongo
 # import io
 # from getpass import getpass
@@ -25,7 +26,7 @@ app = Flask(
 
 cors = CORS(app)
 
-REPLICATE_API_TOKEN = "r8_A96aHaaCnBVhHXC77p8it3vkw5lb7zI1kNpgk"
+REPLICATE_API_TOKEN = os.getenv("key")
 environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
 
 
