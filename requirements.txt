@@ -32,3 +32,4 @@ typing_extensions==4.10.0
 # UNKNOWN @ git+https://github.com/benoitc/gunicorn.git@88fc4a43152039c28096c8ba3eeadb3fbaa4aff9
 Werkzeug==3.0.1
 zipp==3.17.0
+python-dotenv==1.0.1
