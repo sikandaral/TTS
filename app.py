@@ -1,9 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request,jsonify
 from flask_cors import CORS, cross_origin
 import replicate
 from os import environ
-import os
 from flask_pymongo import PyMongo
+
+from dotenv import load_dotenv
 # import io
 # from getpass import getpass
 # from pydub.playback import play
@@ -13,7 +14,8 @@ from flask_pymongo import PyMongo
 
 
 
-
+# path=find_dotenv()
+load_dotenv()
 
 
 
@@ -26,7 +28,9 @@ app = Flask(
 
 cors = CORS(app)
 
-REPLICATE_API_TOKEN = os.getenv("key")
+REPLICATE_API_TOKEN = environ.get('key')
+print(REPLICATE_API_TOKEN)
+# print (os.environ)
 environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
 
 
@@ -114,6 +118,41 @@ def receive_text():
     elif request.method == "GET":
         return "This is the GET endpoint. Send a POST request with JSON data."
 
+
+@app.route("/login", methods=["POST"])
+@cross_origin()
+def login():
+    # Logic to handle login request
+    # Retrieve data from request
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    
+    # Query MongoDB to check if user exists and credentials are correct
+    user = mongo.db.users.find_one({"username": username, "password": password})
+    if user:
+        return jsonify({"message": "Login successful", "user": user}), 200
+    else:
+        return jsonify({"error": "invalid"}), 401
+
+@app.route("/signup", methods=["POST"])
+@cross_origin()
+def signup():
+    # Logic to handle signup request
+    # Retrieve data from request
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    
+    # Check if user already exists
+    existing_user = mongo.db.users.find_one({"username": username})
+    if existing_user:
+        return jsonify({"error": "Username already exists"}), 400
+    
+    # Add user to MongoDB
+    new_user = {"username": username, "password": password}
+    mongo.db.users.insert_one(new_user)
+    return jsonify({"message": "Success"}), 201
 
 # # Running app
 if __name__ == "__main__":
