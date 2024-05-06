@@ -2,7 +2,7 @@ from flask import Flask, request,jsonify
 from flask_cors import CORS, cross_origin
 import replicate
 from os import environ
-from flask_pymongo import PyMongo
+from flask_pymongo import PyMongo,MongoClient
 
 from dotenv import load_dotenv
 # import io
@@ -29,13 +29,24 @@ app = Flask(
 cors = CORS(app)
 
 REPLICATE_API_TOKEN = environ.get('key')
-print(REPLICATE_API_TOKEN)
+# print(REPLICATE_API_TOKEN)
 # print (os.environ)
 environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
 
-
-app.config["MONGO_URI"] = "mongodb://localhost:27017/myDatabase"
+app.config['MONG_DBNAME'] = 'TTS'
+app.config["MONGO_URI"] = "mongodb+srv://alikhansikandar007:sCRny95r8CS0vxfS@cluster0.xpits74.mongodb.net/TTS?retryWrites=true&w=majority"
 mongo = PyMongo(app)
+
+
+try:
+    print(mongo.db.users)
+
+    print({"message": "Database connection successful"})
+except Exception as e:
+    print({"error": "Failed to connect to the database", "details": str(e)})
+
+# client = MongoClient('localhost', 27017)
+
 # Route for receiving text
 @app.route("/",methods=["POST", "GET"])
 @cross_origin()
@@ -127,13 +138,16 @@ def login():
     data = request.json
     username = data.get("username")
     password = data.get("password")
+
+    print(username, password)
     
     # Query MongoDB to check if user exists and credentials are correct
     user = mongo.db.users.find_one({"username": username, "password": password})
     if user:
-        return jsonify({"message": "Login successful", "user": user}), 200
+        print("login successful")
+        return jsonify({"message": "Login successful"}), 200
     else:
-        return jsonify({"error": "invalid"}), 401
+        return jsonify({"message": "invalid"}), 401
 
 @app.route("/signup", methods=["POST"])
 @cross_origin()
@@ -143,15 +157,19 @@ def signup():
     data = request.json
     username = data.get("username")
     password = data.get("password")
+
+    print("sign",username, password)
     
     # Check if user already exists
     existing_user = mongo.db.users.find_one({"username": username})
     if existing_user:
+
         return jsonify({"error": "Username already exists"}), 400
     
     # Add user to MongoDB
     new_user = {"username": username, "password": password}
     mongo.db.users.insert_one(new_user)
+    print("user signed up successfully")
     return jsonify({"message": "Success"}), 201
 
 # # Running app
